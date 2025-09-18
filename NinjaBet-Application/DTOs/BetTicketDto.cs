@@ -1,6 +1,6 @@
 ﻿namespace NinjaBet_Application.DTOs
 {
-    public class BeTicketDto
+    public class BetTicketDto
     {
         public decimal IdBilhete { get; set; }
         public decimal OddTotal { get; set; }

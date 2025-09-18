@@ -1,9 +1,12 @@
-﻿namespace NinjaBet_Dmain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NinjaBet_Dmain.Entities
 {
     public class BetSelecao
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
-        public int IdJogo { get; private set; }
+        [Key]
+        public int Id { get; private set; }
+        public int IdJogo { get; private set; } //identificador do jogo real que vem da API
         public string Competicao { get; private set; }
         public string TipoEsporte { get; private set; }
         public string Palpite { get; private set; }

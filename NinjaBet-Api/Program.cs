@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NinjaBet_Api.Services;
+using NinjaBet_Application.Interfaces;
 using NinjaBet_Application.Services;
 using NinjaBet_Dmain.Repositories;
 using NinjaBet_Infrastructure.Persistence;
@@ -37,6 +38,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Injeta a dependência
 builder.Services.AddScoped<IBetRepository, BetRepository>();
 builder.Services.AddScoped<ILogErroRepository, LogErroRepository>();
+builder.Services.AddScoped<IJogosService, FootballApiService>();
 
 //Services
 builder.Services.AddScoped<BetService>();

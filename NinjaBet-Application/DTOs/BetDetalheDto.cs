@@ -8,5 +8,6 @@
         public decimal PossivelRetorno { get; set; }
         public DateTime DataCriada { get; set; }
         public List<BetSelecaoDto> Selecoes { get; set; } = new();
+        public List<BetJogoDto> Jogos { get; set; } = new();
     }
 }

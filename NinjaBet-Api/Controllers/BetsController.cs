@@ -16,7 +16,7 @@ namespace NinjaBet_Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBet([FromBody] BeTicketDto dto)
+        public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {
             /*
              ##############
@@ -36,29 +36,12 @@ namespace NinjaBet_Api.Controllers
         [HttpGet("Bilhete/{id}")]
         public async Task<IActionResult> ObterAposta(int id)
         {
-            var aposta = await _betService.ObterApostaPorIdAsync(id);
+            var aposta = await _betService.ObterApostaDetalhadaAsync(id);
 
             if (aposta == null)
-                return NotFound(new { message = "Aposta não encontrada." });
+                return NotFound(new { success = false, message = "Aposta não encontrada" });
 
-            var dto = new BetDetalheDto
-            {
-                Id = aposta.Id,
-                Valor = aposta.Valor,
-                TotalOdds = aposta.TotalOdds,
-                PossivelRetorno = aposta.PossivelRetorno,
-                DataCriada = aposta.DataCriada,
-                Selecoes = aposta.Selections.Select(s => new BetSelecaoDto
-                {
-                    IdJogo = s.IdJogo,
-                    Competicao = s.Competicao,
-                    TipoEsporte = s.TipoEsporte,
-                    Palpite = s.Palpite,
-                    OddSelecionada = s.OddSelecionado
-                }).ToList()
-            };
-
-            return Ok(dto);
+            return Ok(new { success = true, data = aposta });
         }
     }
 }
