@@ -52,7 +52,7 @@ namespace NinjaBet_Application.Services
             }
         }
 
-        public async Task<Bet?> ObterApostaPorIdAsync(Guid id)
+        public async Task<Bet?> ObterApostaPorIdAsync(int id)
         {
             try
             {

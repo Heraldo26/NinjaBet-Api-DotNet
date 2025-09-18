@@ -33,8 +33,8 @@ namespace NinjaBet_Api.Controllers
             return Ok(new { success = true, betId = bet.Id });
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> ObterAposta(Guid id)
+        [HttpGet("Bilhete/{id}")]
+        public async Task<IActionResult> ObterAposta(int id)
         {
             var aposta = await _betService.ObterApostaPorIdAsync(id);
 

@@ -19,7 +19,7 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Bet?> ObterPorIdAsync(Guid id)
+        public async Task<Bet?> ObterPorIdAsync(int id)
         {
             return await _context.Bets
                 .Include(b => b.Selections)

@@ -1,8 +1,11 @@
-﻿namespace NinjaBet_Dmain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NinjaBet_Dmain.Entities
 {
     public class Bet
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
+        [Key]
+        public int Id { get; private set; }
         public decimal Valor { get; private set; }
         public decimal TotalOdds { get; private set; }
         public decimal PossivelRetorno { get; private set; }

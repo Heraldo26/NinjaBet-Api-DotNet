@@ -2,7 +2,7 @@
 {
     public class BetDetalheDto
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public decimal Valor { get; set; }
         public decimal TotalOdds { get; set; }
         public decimal PossivelRetorno { get; set; }
