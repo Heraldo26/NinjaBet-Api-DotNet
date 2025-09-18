@@ -1,0 +1,19 @@
+# Pastas de build do .NET
+bin/
+obj/
+
+# Configurações locais do Visual Studio
+.vs/
+
+# Logs
+*.log
+
+# Banco local SQLite (caso use)
+*.db
+
+# Arquivos de usuário
+*.user
+*.suo
+
+# Configs específicos de dev
+appsettings.Development.json

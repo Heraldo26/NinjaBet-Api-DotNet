@@ -1,0 +1,64 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using NinjaBet_Application.DTOs;
+using NinjaBet_Application.Services;
+
+namespace NinjaBet_Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BetsController : ControllerBase
+    {
+        private readonly BetService _betService;
+
+        public BetsController(BetService betService)
+        {
+            _betService = betService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBet([FromBody] BeTicketDto dto)
+        {
+            /*
+             ##############
+             ## PENDENTE ##
+            - colocar regra de negocio para validar se a aposta pode ser criada
+            - verificar se o usuario tem saldo suficiente
+            - debitar o saldo do usuario
+            - verificar se a partida ainda nao comecou
+            - verificar se a odd informada bate com a odd atual da partida
+            - verificar se o tipo de aposta e valido para a partida
+             ##############
+            */
+            var bet = await _betService.CreateBetAsync(dto);
+            return Ok(new { success = true, betId = bet.Id });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> ObterAposta(Guid id)
+        {
+            var aposta = await _betService.ObterApostaPorIdAsync(id);
+
+            if (aposta == null)
+                return NotFound(new { message = "Aposta não encontrada." });
+
+            var dto = new BetDetalheDto
+            {
+                Id = aposta.Id,
+                Valor = aposta.Valor,
+                TotalOdds = aposta.TotalOdds,
+                PossivelRetorno = aposta.PossivelRetorno,
+                DataCriada = aposta.DataCriada,
+                Selecoes = aposta.Selections.Select(s => new BetSelecaoDto
+                {
+                    IdJogo = s.IdJogo,
+                    Competicao = s.Competicao,
+                    TipoEsporte = s.TipoEsporte,
+                    Palpite = s.Palpite,
+                    OddSelecionada = s.OddSelecionado
+                }).ToList()
+            };
+
+            return Ok(dto);
+        }
+    }
+}
