@@ -104,9 +104,9 @@ namespace NinjaBet_Application.Services
                     PlacarFora = jogo?.PlacarFora,
 
                     Ganhou = jogo != null && jogo.PlacarCasa.HasValue && jogo.PlacarFora.HasValue
-                        ? (sel.Palpite.ToLower() == "team1" && jogo.PlacarCasa > jogo.PlacarFora)
-                          || (sel.Palpite.ToLower() == "team2" && jogo.PlacarFora > jogo.PlacarCasa)
-                          || (sel.Palpite.ToLower() == "draw" && jogo.PlacarCasa == jogo.PlacarFora)
+                        ? (sel.Palpite.ToLower() == "time1" && jogo.PlacarCasa > jogo.PlacarFora)
+                          || (sel.Palpite.ToLower() == "time2" && jogo.PlacarFora > jogo.PlacarCasa)
+                          || (sel.Palpite.ToLower() == "empate" && jogo.PlacarCasa == jogo.PlacarFora)
                         : (bool?)null
 
                 };
@@ -129,13 +129,13 @@ namespace NinjaBet_Application.Services
         private bool VerificarResultado(string palpite, int? placarCasa, int? placarFora)
         {
             if (!placarCasa.HasValue || !placarFora.HasValue)
-                return false; // ou null se preferir bool?
+                return false;
 
             return palpite.ToLower() switch
             {
-                "team1" => placarCasa > placarFora,
-                "team2" => placarFora > placarCasa,
-                "draw" => placarCasa == placarFora,
+                "time1" => placarCasa > placarFora,
+                "time2" => placarFora > placarCasa,
+                "empate" => placarCasa == placarFora,
                 _ => false
             };
         }
