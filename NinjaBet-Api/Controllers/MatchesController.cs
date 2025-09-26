@@ -19,7 +19,8 @@ namespace NinjaBet_Api.Controllers
         {
             try
             {
-                var matches = await _service.GetMatches(date);
+                //var matches = await _service.ObterProximosJogosAsync();
+                var matches = await _service.GetPardidas();
                 return Ok(new { success = true, data = matches });
             }
             catch (Exception ex)

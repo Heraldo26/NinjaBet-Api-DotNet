@@ -4,19 +4,19 @@ namespace NinjaBet_Api.Models.Jogos
 {
     public class FormattedMatch
     {
-        public int id { get; set; }
-        public string sportType { get; set; } = "Football";
-        public string competition { get; set; }
-        public string team1 { get; set; }
-        public string team2 { get; set; }
-        public string? team1Logo { get; set; }
-        public string? team2Logo { get; set; }
-        public string date { get; set; }
-        public string time { get; set; }
-        public string status { get; set; }
-        public int? elapsed { get; set; }
-        public ScoreResult score { get; set; }
-        public ScoreResult halftimeScore { get; set; }
-        public Odds odds { get; set; }
+        public int Id { get; set; }
+        public string SportType { get; set; } = "Football";
+        public string Competition { get; set; } = "";
+        public string Team1 { get; set; } = "";
+        public string Team2 { get; set; } = "";
+        public string? Team1Logo { get; set; }
+        public string? Team2Logo { get; set; }
+        public string Date { get; set; } = "";
+        public string Time { get; set; } = "";
+        public string Status { get; set; } = "";
+        public int? Elapsed { get; set; }
+        public ScoreResult Score { get; set; }
+        public ScoreResult HalftimeScore { get; set; }
+        public Odds Odds { get; set; }
     }
 }

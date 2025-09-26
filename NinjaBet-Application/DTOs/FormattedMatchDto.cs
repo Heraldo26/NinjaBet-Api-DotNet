@@ -15,5 +15,8 @@
         public int? Elapsed { get; set; }
         public int? PlacarCasa { get; set; }
         public int? PlacarFora { get; set; }
+        public ScoreResultDto Score { get; set; }
+        public ScoreResultDto HalftimeScore { get; set; }
+        public OddsDto Odds { get; set; }
     }
 }
