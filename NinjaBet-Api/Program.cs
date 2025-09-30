@@ -5,8 +5,37 @@ using NinjaBet_Application.Services;
 using NinjaBet_Dmain.Repositories;
 using NinjaBet_Infrastructure.Persistence;
 using NinjaBet_Infrastructure.Persistence.Repositories;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Config JWT
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+builder.Services.AddAuthorization();
+
 
 // Add services to the container.
 
@@ -38,9 +67,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Injeta a dependência
 builder.Services.AddScoped<IBetRepository, BetRepository>();
 builder.Services.AddScoped<ILogErroRepository, LogErroRepository>();
-builder.Services.AddScoped<IJogosService, FootballApiService>();
+builder.Services.AddScoped<IFootballApiService, FootballApiService>();
 
 //Services
+builder.Services.AddScoped<MatchService>();
 builder.Services.AddScoped<BetService>();
 
 var app = builder.Build();
@@ -56,6 +86,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

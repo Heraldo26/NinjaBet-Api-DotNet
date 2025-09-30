@@ -2,7 +2,7 @@
 
 namespace NinjaBet_Api.Models.Jogos
 {
-    public class FormattedMatch
+    public class MatchModel
     {
         public int Id { get; set; }
         public string SportType { get; set; } = "Football";
@@ -15,8 +15,8 @@ namespace NinjaBet_Api.Models.Jogos
         public string Time { get; set; } = "";
         public string Status { get; set; } = "";
         public int? Elapsed { get; set; }
-        public ScoreResult Score { get; set; }
-        public ScoreResult HalftimeScore { get; set; }
-        public Odds Odds { get; set; }
+        public ScoreResultModel Score { get; set; }
+        public ScoreResultModel HalftimeScore { get; set; }
+        public OddsModel Odds { get; set; }
     }
 }

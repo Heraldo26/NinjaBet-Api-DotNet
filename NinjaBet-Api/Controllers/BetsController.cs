@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NinjaBet_Application.DTOs;
 using NinjaBet_Application.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NinjaBet_Api.Controllers
 {
@@ -15,6 +16,7 @@ namespace NinjaBet_Api.Controllers
             _betService = betService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {

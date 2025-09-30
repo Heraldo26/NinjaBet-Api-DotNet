@@ -1,6 +1,6 @@
 ﻿namespace NinjaBet_Api.Models.Jogos
 {
-    public class League
+    public class LeagueModel
     {
         public string name { get; set; }
     }

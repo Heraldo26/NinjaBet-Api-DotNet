@@ -1,6 +1,6 @@
 ﻿namespace NinjaBet_Api.Models.Jogos
 {
-    public class Odds
+    public class OddsModel
     {
         public decimal? Team1 { get; set; }
         public decimal? Draw { get; set; }

@@ -12,9 +12,9 @@ namespace NinjaBet_Application.Services
         private readonly IBetRepository _betRepository;
         private readonly ILogErroRepository _logRepository;
         private readonly ILogger<BetService> _logger;
-        private readonly IJogosService _jogosService;
+        private readonly IFootballApiService _jogosService;
 
-        public BetService(IBetRepository betRepository, ILogErroRepository logRepository, ILogger<BetService> logger, IJogosService jogosService)
+        public BetService(IBetRepository betRepository, ILogErroRepository logRepository, ILogger<BetService> logger, IFootballApiService jogosService)
         {
             _betRepository = betRepository;
             _logRepository = logRepository;
@@ -100,13 +100,13 @@ namespace NinjaBet_Application.Services
                     LogoCasa = jogo?.Team1Logo,
                     LogoFora = jogo?.Team2Logo,
                     Status = jogo?.Status ?? "Desconhecido",
-                    PlacarCasa = jogo?.PlacarCasa,
-                    PlacarFora = jogo?.PlacarFora,
+                    PlacarCasa = jogo?.Score?.Team1,
+                    PlacarFora = jogo?.Score?.Team2,
 
-                    Ganhou = jogo != null && jogo.PlacarCasa.HasValue && jogo.PlacarFora.HasValue
-                        ? (sel.Palpite.ToLower() == "time1" && jogo.PlacarCasa > jogo.PlacarFora)
-                          || (sel.Palpite.ToLower() == "time2" && jogo.PlacarFora > jogo.PlacarCasa)
-                          || (sel.Palpite.ToLower() == "empate" && jogo.PlacarCasa == jogo.PlacarFora)
+                    Ganhou = jogo != null && jogo.Score.Team1.HasValue && jogo.Score.Team1.HasValue
+                        ? (sel.Palpite.ToLower() == "time1" && jogo.Score.Team1 > jogo.Score.Team2)
+                          || (sel.Palpite.ToLower() == "time2" && jogo.Score.Team2 > jogo.Score.Team1)
+                          || (sel.Palpite.ToLower() == "empate" && jogo.Score.Team1 == jogo.Score.Team2)
                         : (bool?)null
 
                 };
@@ -115,8 +115,8 @@ namespace NinjaBet_Application.Services
                 {
                     jogoDto.Ganhou = VerificarResultado(
                         sel.Palpite,
-                        jogo.PlacarCasa,
-                        jogo.PlacarFora
+                        jogo.Score?.Team1,
+                        jogo.Score?.Team2
                     );
                 }
 

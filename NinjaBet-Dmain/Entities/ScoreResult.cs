@@ -1,4 +1,4 @@
-﻿namespace NinjaBet_Api.Models.Jogos
+﻿namespace NinjaBet_Dmain.Entities
 {
     public class ScoreResult
     {
