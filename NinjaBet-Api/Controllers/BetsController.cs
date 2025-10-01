@@ -16,7 +16,6 @@ namespace NinjaBet_Api.Controllers
             _betService = betService;
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {
@@ -44,6 +43,27 @@ namespace NinjaBet_Api.Controllers
                 return NotFound(new { success = false, message = "Aposta não encontrada" });
 
             return Ok(new { success = true, data = aposta });
+        }
+
+        [Authorize(Roles = "Admin,Gerente")]
+        [HttpGet("Relatorios")]
+        public IActionResult GetRelatorios()
+        {
+            return Ok("Somente admins e gerentes acessam isso!");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-only")]
+        public IActionResult SomenteAdmin()
+        {
+            return Ok("Acesso liberado para ADMIN!");
+        }
+
+        [Authorize] // Qualquer usuário autenticado
+        [HttpGet("autenticado")]
+        public IActionResult QualquerLogado()
+        {
+            return Ok("Qualquer usuário logado pode acessar.");
         }
     }
 }
