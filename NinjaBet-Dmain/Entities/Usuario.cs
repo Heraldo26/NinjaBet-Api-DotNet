@@ -13,6 +13,12 @@ namespace NinjaBet_Dmain.Entities
         public bool Ativo { get; set; }
         public DateTime DataCriacao { get; set; }
 
+        public int? CriadorId { get; set; } // quem cadastrou
+        public Usuario? Criador { get; set; }
+
+        // Relacionamento com as apostas
+        public ICollection<Bet>? Bets { get; set; }
+
 
         public Usuario() { }
         public Usuario(string username, string passwordHash, PerfilAcessoEnum perfil)

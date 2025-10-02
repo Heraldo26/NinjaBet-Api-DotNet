@@ -44,31 +44,31 @@ namespace NinjaBet_Api.Controllers
             });
         }
 
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterModel request)
-        {
-            try
-            {
-                var usuario = _usuarioService.CreateUsuario(request.Username, request.Password, request.Perfil);
+        //[HttpPost("register")]
+        //public IActionResult Register([FromBody] RegisterModel request)
+        //{
+        //    try
+        //    {
+        //        var usuario = _usuarioService.CreateUsuario(request.Username, request.Password, request.Perfil);
 
-                return Ok(new
-                {
-                    Mensagem = "Usuário registrado com sucesso!",
-                    Usuario = new
-                    {
-                        usuario.Id,
-                        usuario.Username,
-                        Perfil = usuario.Perfil.ToString(),
-                        usuario.Ativo,
-                        usuario.DataCriacao
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Erro = ex.Message });
-            }
-        }
+        //        return Ok(new
+        //        {
+        //            Mensagem = "Usuário registrado com sucesso!",
+        //            Usuario = new
+        //            {
+        //                usuario.Id,
+        //                usuario.Username,
+        //                Perfil = usuario.Perfil.ToString(),
+        //                usuario.Ativo,
+        //                usuario.DataCriacao
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { Erro = ex.Message });
+        //    }
+        //}
 
         private string GenerateJwtToken(Usuario usuario)
         {
@@ -77,11 +77,11 @@ namespace NinjaBet_Api.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()), // ID do usuário
-                new Claim(JwtRegisteredClaimNames.UniqueName, usuario.Username), // Nome de usuário
-                new Claim(ClaimTypes.Role, usuario.Perfil.ToString()), // PERFIL como Role
-                new Claim("ativo", usuario.Ativo.ToString()),   // Status
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // ID único do token
+                new Claim("id", usuario.Id.ToString()),           // ID do usuário
+                new Claim("perfil", usuario.Perfil.ToString()),  // Perfil
+                new Claim(ClaimTypes.Name, usuario.Username),    // Nome de usuário
+                new Claim("ativo", usuario.Ativo.ToString()),    // Status
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var token = new JwtSecurityToken(

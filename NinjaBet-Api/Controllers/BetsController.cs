@@ -2,6 +2,8 @@
 using NinjaBet_Application.DTOs;
 using NinjaBet_Application.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace NinjaBet_Api.Controllers
 {
@@ -59,11 +61,15 @@ namespace NinjaBet_Api.Controllers
             return Ok("Acesso liberado para ADMIN!");
         }
 
-        [Authorize] // Qualquer usuário autenticado
-        [HttpGet("autenticado")]
-        public IActionResult QualquerLogado()
+        [Authorize(Roles = "Cambista")]
+        [HttpGet("listarBets")]
+        public async Task<IActionResult> listarBets()
         {
-            return Ok("Qualquer usuário logado pode acessar.");
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var apostas = await _betService.ListarBetsDoCambista(userId);
+
+            return Ok(new { success = true, data = apostas });
         }
     }
 }

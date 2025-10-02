@@ -25,5 +25,13 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
                 .Include(b => b.Selections)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
+
+        public async Task<IEnumerable<Bet>> GetBetsByCambistaAsync(int cambistaId)
+        {
+            return await _context.Bets
+                .Include(b => b.Usuario)
+                .Where(b => b.UsuarioId == cambistaId)
+                .ToListAsync();
+        }
     }
 }

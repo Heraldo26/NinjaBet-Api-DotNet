@@ -6,7 +6,11 @@ namespace NinjaBet_Dmain.Repositories
     {
         Task<Usuario?> GetUsuarioAsync(string username, string password);
 
-        Usuario? GetByUsername(string username);
-        void Add(Usuario usuario);
+        Task<Usuario?> GetByUsername(string username);
+        Task<Usuario?> GetByIdAsync(int id);
+
+        Task<List<Usuario>> GetAllAsync();
+        Task<List<Usuario>> GetUsuariosPorCriadorAsync(int criadorId);
+        Task AddAsync(Usuario usuario);
     }
 }

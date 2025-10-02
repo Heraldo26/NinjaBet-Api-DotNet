@@ -22,6 +22,11 @@ namespace NinjaBet_Application.Services
             _jogosService = jogosService;
         }
 
+        public async Task<IEnumerable<Bet>> ListarBetsDoCambista(int cambistaId)
+        {
+            return await _betRepository.GetBetsByCambistaAsync(cambistaId);
+        }
+
         public async Task<Bet> CreateBetAsync(BetTicketDto dto)
         {
             try

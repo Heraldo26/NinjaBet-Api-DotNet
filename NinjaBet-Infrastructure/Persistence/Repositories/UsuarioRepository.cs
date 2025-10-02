@@ -12,6 +12,12 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
         {
             _context = context;
         }
+
+        public async Task<Usuario?> GetByIdAsync(int id)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
         public async Task<Usuario?> GetUsuarioAsync(string username, string password)
         {
             var usuario = await _context.Usuarios
@@ -25,15 +31,27 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
                 : null;
         }
 
-        public Usuario? GetByUsername(string username)
+        public async Task<Usuario?> GetByUsername(string username)
         {
-            return _context.Usuarios.FirstOrDefault(u => u.Username == username);
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public void Add(Usuario usuario)
+        public async Task AddAsync(Usuario usuario)
         {
             _context.Usuarios.Add(usuario);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Usuario>> GetAllAsync()
+        {
+            return await _context.Usuarios.ToListAsync();
+        }
+
+        public async Task<List<Usuario>> GetUsuariosPorCriadorAsync(int criadorId)
+        {
+            return await _context.Usuarios
+                .Where(u => u.CriadorId == criadorId)
+                .ToListAsync();
         }
     }
 }

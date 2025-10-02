@@ -12,6 +12,16 @@ namespace NinjaBet_Application.Services
             _usuarioRepository = usuarioRepository;
         }
 
+        public async Task<Usuario?> GetByIdAsync(int id)
+        {
+            return await _usuarioRepository.GetByIdAsync(id);
+        }
+
+        public async Task<Usuario?> GetByUsernameAsync(string username)
+        {
+            return await _usuarioRepository.GetByUsername(username);
+        }
+
         public async Task<Usuario?> GetUsuarioAsync(string username, string password)
         {
             var usuario = await _usuarioRepository.GetUsuarioAsync(username, password);
@@ -22,21 +32,53 @@ namespace NinjaBet_Application.Services
             return usuario;
         }
 
-        public Usuario CreateUsuario(string username, string password, string perfil)
+        public async Task<Usuario> CreateUsuario(string username, string password, string perfilDesejado, int criadorId)
         {
-            var existente = _usuarioRepository.GetByUsername(username);
+            Usuario existente = await _usuarioRepository.GetByUsername(username);
             if (existente != null)
                 throw new Exception("Usuário já existe.");
 
-            var usuario = new Usuario(
-                                username,
-                                BCrypt.Net.BCrypt.HashPassword(password),
-                                Enum.Parse<PerfilAcessoEnum>(perfil, true)
-                            );
+            // Converte perfil
+            if (!Enum.TryParse<PerfilAcessoEnum>(perfilDesejado, true, out var perfil))
+                throw new Exception("Perfil inválido.");
 
-            _usuarioRepository.Add(usuario);
+
+            var usuario = new Usuario
+            {
+                Username = username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                Perfil = perfil,
+                Ativo = true,
+                DataCriacao = DateTime.UtcNow,
+                CriadorId = criadorId // vínculo com quem criou
+            };
+
+            await _usuarioRepository.AddAsync(usuario);
 
             return usuario;
+        }
+
+        public static bool PodeCriarPerfil(PerfilAcessoEnum criador, PerfilAcessoEnum desejado)
+        {
+            return criador switch
+            {
+                PerfilAcessoEnum.Admin => true, // Admin pode criar qualquer perfil
+                PerfilAcessoEnum.Gerente => desejado == PerfilAcessoEnum.Cambista || desejado == PerfilAcessoEnum.Apostador,
+                PerfilAcessoEnum.Cambista => desejado == PerfilAcessoEnum.Apostador,
+                _ => false // Apostador não pode criar usuários
+            };
+        }
+
+        public async Task<List<Usuario>> GetUsuariosVinculadosAsync(Usuario solicitante)
+        {
+            if (solicitante.Perfil == PerfilAcessoEnum.Admin)
+            {
+                return await _usuarioRepository.GetAllAsync();
+            }
+            else
+            {
+                return await _usuarioRepository.GetUsuariosPorCriadorAsync(solicitante.Id);
+            }
         }
     }
 }

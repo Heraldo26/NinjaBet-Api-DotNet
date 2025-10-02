@@ -14,6 +14,9 @@ namespace NinjaBet_Dmain.Entities
         private readonly List<BetSelecao> _selections = new();
         public List<BetSelecao> Selections { get; private set; } = new();
 
+        public int UsuarioId { get; set; }
+        public Usuario Usuario { get; set; } = null!;
+
         public Bet(decimal valor, decimal totalOdds, decimal possivelRetorno)
         {
             Valor = valor;

@@ -6,5 +6,7 @@ namespace NinjaBet_Dmain.Repositories
     {
         Task AddAsync(Bet bet);
         Task<Bet?> ObterPorIdAsync(int id);
+
+        Task<IEnumerable<Bet>> GetBetsByCambistaAsync(int cambistaId);
     }
 }

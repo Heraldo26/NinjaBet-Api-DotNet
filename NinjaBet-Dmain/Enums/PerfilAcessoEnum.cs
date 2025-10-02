@@ -3,7 +3,7 @@
     public enum PerfilAcessoEnum
     {
         Apostador = 1,
-        Banquista = 2,
+        Cambista = 2,
         Gerente = 3,
         Admin = 4
     }
