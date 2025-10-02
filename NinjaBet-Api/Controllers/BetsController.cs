@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NinjaBet_Application.DTOs;
 using NinjaBet_Application.Services;
-using Microsoft.AspNetCore.Authorization;
+using NinjaBet_Dmain.Entities;
+using NinjaBet_Dmain.Enums;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -28,6 +30,7 @@ namespace NinjaBet_Api.Controllers
             - verificar se o usuario tem saldo suficiente
             - debitar o saldo do usuario
             - verificar se a partida ainda nao comecou
+            -verificar se o valor da aposta > zero
             - verificar se a odd informada bate com a odd atual da partida
             - verificar se o tipo de aposta e valido para a partida
              ##############
@@ -54,22 +57,74 @@ namespace NinjaBet_Api.Controllers
             return Ok("Somente admins e gerentes acessam isso!");
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet("admin-only")]
-        public IActionResult SomenteAdmin()
-        {
-            return Ok("Acesso liberado para ADMIN!");
-        }
 
-        [Authorize(Roles = "Cambista")]
+        [Authorize(Roles = "Admin,Cambista")]
         [HttpGet("listarBets")]
         public async Task<IActionResult> listarBets()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = int.Parse(User.FindFirstValue("id")!);
 
             var apostas = await _betService.ListarBetsDoCambista(userId);
 
             return Ok(new { success = true, data = apostas });
+        }
+
+        [HttpPost("aprovar/{betId}")]
+        [Authorize(Roles = "Cambista")]
+        public async Task<IActionResult> AprovarAposta(int betId, int cambistaId)
+        {
+            try
+            {
+                var usuarioId = int.Parse(User.FindFirst("id")!.Value);
+                var perfil = Enum.Parse<PerfilAcessoEnum>(User.FindFirst(ClaimTypes.Role)!.Value);
+
+                if (perfil != PerfilAcessoEnum.Cambista)
+                    return Forbid("Apenas Cambistas podem aprovar apostas.");
+
+                var bet = await _betService.AprovarAposta(betId, cambistaId);
+
+                return Ok(new
+                {
+                    Mensagem = "Aposta aprovada com sucesso!",
+                    Aposta = new
+                    {
+                        bet.Id,
+                        bet.Status,
+                        bet.DataAprovacao,
+                    }
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Erro = ex.Message });
+            }
+        }
+
+        [HttpPost("{betId}/cancelar")]
+        [Authorize(Roles = "Cambista")]
+        public async Task<IActionResult> CancelarAposta(int betId)
+        {
+            try
+            {
+                var cambistaId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var aposta = await _betService.CancelarApostaAsync(betId, cambistaId);
+
+                return Ok(new
+                {
+                    Mensagem = "Aposta cancelada com sucesso!",
+                    Aposta = new
+                    {
+                        aposta.Id,
+                        aposta.Status,
+                        aposta.DataCancelado
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Erro = ex.Message });
+            }
         }
     }
 }

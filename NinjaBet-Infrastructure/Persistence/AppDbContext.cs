@@ -17,12 +17,22 @@ namespace NinjaBet_Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Bet>()
-                .HasMany(b => b.Selections)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
             base.OnModelCreating(modelBuilder);
+
+            // Relacionamento Bet -> Apostador
+            modelBuilder.Entity<Bet>()
+                .HasOne(b => b.Apostador)
+                .WithMany() // ou .WithMany(u => u.ApostasFeitas) se quiser a coleção no Usuario
+                .HasForeignKey(b => b.ApostadorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relacionamento Bet -> Cambista
+            modelBuilder.Entity<Bet>()
+                .HasOne(b => b.Cambista)
+                .WithMany() // ou .WithMany(u => u.ApostasGerenciadas)
+                .HasForeignKey(b => b.CambistaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             //Criar usuario padrao admin
             //modelBuilder.Entity<Usuario>().HasData(

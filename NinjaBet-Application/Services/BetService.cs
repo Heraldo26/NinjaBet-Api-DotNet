@@ -3,7 +3,9 @@ using NinjaBet_Application.DTOs;
 using NinjaBet_Application.Interfaces;
 using NinjaBet_Dmain.Entities;
 using NinjaBet_Dmain.Entities.Log;
+using NinjaBet_Dmain.Enums;
 using NinjaBet_Dmain.Repositories;
+using NinjaBet_Dmain.Extensions;
 
 namespace NinjaBet_Application.Services
 {
@@ -31,7 +33,7 @@ namespace NinjaBet_Application.Services
         {
             try
             {
-                var bet = new Bet(dto.ValorAposta, dto.OddTotal, dto.PossivelRetorno);
+                var bet = new Bet(dto.ValorAposta, dto.OddTotal, dto.PossivelRetorno, dto.ApostadorId, dto.CambistaId);
 
                 foreach (var selectionDto in dto.Selecoes)
                 {
@@ -73,6 +75,75 @@ namespace NinjaBet_Application.Services
                 await _logRepository.AdicionarAsync(log);
                 throw new ApplicationException("Erro ao buscar a aposta.", ex);
             }
+        }
+
+        public async Task<Bet> AprovarAposta(int betId, int cambistaId)
+        {
+            var bet = await _betRepository.ObterPorIdAsync(betId);
+            if (bet == null)
+                throw new ApplicationException("Aposta não encontrada.");
+
+            if (bet.CambistaId != cambistaId)
+                throw new Exception("Você não pode aprovar apostas de outro cambista.");
+
+            if (bet.Status != StatusApostaEnum.Pendente)
+                throw new ApplicationException("Apenas apostas pendentes podem ser aprovadas.");
+
+            foreach(var selection in bet.Selections)
+            {
+                var jogo = await _jogosService.ObterJogoPorId(selection.IdJogo);
+
+                if (jogo == null)
+                    throw new ApplicationException($"Jogo com ID {selection.IdJogo} não encontrado.");
+
+                if (!string.Equals(jogo.Status, "Not Started", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(jogo.Status, "Não Iniciado", StringComparison.OrdinalIgnoreCase))
+                    throw new ApplicationException($"Aposta não pode ser aprovada. O jogo {selection.IdJogo} já começou ou terminou.");
+
+                if (jogo.Odds == null)
+                    throw new ApplicationException($"Odds não disponíveis para o jogo {selection.IdJogo}.");
+
+                decimal currentOdd;
+                try
+                {
+                    currentOdd = jogo.Odds.GetOddForBetType(selection.Palpite);
+                }
+                catch (ArgumentException)
+                {
+                    throw new ApplicationException($"Palpite inválido na seleção {selection.IdJogo}: {selection.Palpite}");
+                }
+
+                // Comparação com tolerância: arredonda para 2 casas (odds normalmente tem 2 decimais)
+                var oddAposta = decimal.Round(selection.OddSelecionado, 2);
+                var oddAtual = decimal.Round(currentOdd, 2);
+
+                if (oddAposta != oddAtual)
+                    throw new ApplicationException($"Aposta não pode ser aprovada. A odd para o jogo {selection.IdJogo} mudou. (aposta: {oddAposta}, atual: {oddAtual})");
+            }
+
+            bet.Status = StatusApostaEnum.Aprovada;
+            bet.DataAprovacao = DateTime.UtcNow;
+
+            await _betRepository.UpdateAsync(bet);
+
+            return bet;
+        }
+
+        public async Task<Bet> CancelarApostaAsync(int betId, int cambistaId)
+        {
+            var bet = await _betRepository.ObterPorIdAsync(betId);
+            if (bet == null)
+                throw new Exception("Aposta não encontrada.");
+
+            if (bet.CambistaId != cambistaId)
+                throw new Exception("Você não pode cancelar apostas de outro cambista.");
+
+            bet.Status = StatusApostaEnum.Cancelada;
+            bet.DataCancelado = DateTime.UtcNow;
+
+            await _betRepository.UpdateAsync(bet);
+
+            return bet;
         }
 
         public async Task<BetDetalheDto?> ObterApostaDetalhadaAsync(int apostaId)

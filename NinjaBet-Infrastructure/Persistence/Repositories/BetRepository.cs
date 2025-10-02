@@ -19,6 +19,12 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateAsync(Bet bet)
+        {
+            _context.Update(bet);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Bet?> ObterPorIdAsync(int id)
         {
             return await _context.Bets
@@ -29,8 +35,8 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<Bet>> GetBetsByCambistaAsync(int cambistaId)
         {
             return await _context.Bets
-                .Include(b => b.Usuario)
-                .Where(b => b.UsuarioId == cambistaId)
+                .Include(b => b.Cambista)
+                .Where(b => b.CambistaId == cambistaId)
                 .ToListAsync();
         }
     }

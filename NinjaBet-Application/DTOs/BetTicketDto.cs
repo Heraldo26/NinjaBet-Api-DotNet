@@ -6,6 +6,8 @@
         public decimal OddTotal { get; set; }
         public decimal ValorAposta { get; set; }
         public decimal PossivelRetorno { get; set; }
+        public int? ApostadorId { get; set; }
+        public int? CambistaId { get; set; }
         public List<BetSelecaoDto> Selecoes { get; set; } = new();
     }
 }

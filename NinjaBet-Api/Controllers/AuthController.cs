@@ -78,6 +78,7 @@ namespace NinjaBet_Api.Controllers
             var claims = new List<Claim>
             {
                 new Claim("id", usuario.Id.ToString()),           // ID do usuário
+                new Claim(ClaimTypes.Role, usuario.Perfil.ToString()), // Papel/Perfil
                 new Claim("perfil", usuario.Perfil.ToString()),  // Perfil
                 new Claim(ClaimTypes.Name, usuario.Username),    // Nome de usuário
                 new Claim("ativo", usuario.Ativo.ToString()),    // Status
