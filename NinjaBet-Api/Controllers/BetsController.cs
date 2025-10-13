@@ -14,15 +14,22 @@ namespace NinjaBet_Api.Controllers
     public class BetsController : ControllerBase
     {
         private readonly BetService _betService;
+        private readonly UsuarioService _usuarioService;
 
-        public BetsController(BetService betService)
+        public BetsController(BetService betService, UsuarioService usuarioService)
         {
             _betService = betService;
+            _usuarioService = usuarioService;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {
+            var userId = int.Parse(User.FindFirstValue("id")!);
+
+            var apostador = _usuarioService.GetByIdAsync(userId).Result;
+            dto.ApostadorId = apostador.Id;
+            dto.CambistaId = apostador.CriadorId;
             /*
              ##############
              ## PENDENTE ##
@@ -71,7 +78,7 @@ namespace NinjaBet_Api.Controllers
 
         [HttpPost("aprovar/{betId}")]
         [Authorize(Roles = "Cambista")]
-        public async Task<IActionResult> AprovarAposta(int betId, int cambistaId)
+        public async Task<IActionResult> AprovarAposta(int betId)
         {
             try
             {
@@ -81,7 +88,7 @@ namespace NinjaBet_Api.Controllers
                 if (perfil != PerfilAcessoEnum.Cambista)
                     return Forbid("Apenas Cambistas podem aprovar apostas.");
 
-                var bet = await _betService.AprovarAposta(betId, cambistaId);
+                var bet = await _betService.AprovarAposta(betId, usuarioId);
 
                 return Ok(new
                 {
@@ -101,14 +108,19 @@ namespace NinjaBet_Api.Controllers
             }
         }
 
-        [HttpPost("{betId}/cancelar")]
+        [HttpPost("cancelar/{betId}")]
         [Authorize(Roles = "Cambista")]
         public async Task<IActionResult> CancelarAposta(int betId)
         {
             try
             {
-                var cambistaId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-                var aposta = await _betService.CancelarApostaAsync(betId, cambistaId);
+                var userId = int.Parse(User.FindFirstValue("id")!);
+                var perfil = Enum.Parse<PerfilAcessoEnum>(User.FindFirst(ClaimTypes.Role)!.Value);
+
+                if (perfil != PerfilAcessoEnum.Cambista)
+                    return Forbid("Apenas Cambistas podem aprovar apostas.");
+
+                var aposta = await _betService.CancelarApostaAsync(betId, userId);
 
                 return Ok(new
                 {
