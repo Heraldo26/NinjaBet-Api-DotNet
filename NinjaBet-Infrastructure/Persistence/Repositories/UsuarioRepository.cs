@@ -42,15 +42,21 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Usuario>> GetAllAsync()
+        public async Task UpdateAsync(Usuario usuario)
         {
-            return await _context.Usuarios.ToListAsync();
+            _context.Update(usuario);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Usuario>> GetAllAtivosAsync()
+        {
+            return await _context.Usuarios.Where(a => a.Ativo).ToListAsync();
         }
 
         public async Task<List<Usuario>> GetUsuariosPorCriadorAsync(int criadorId)
         {
             return await _context.Usuarios
-                .Where(u => u.CriadorId == criadorId)
+                .Where(u => u.CriadorId == criadorId && u.Ativo)
                 .ToListAsync();
         }
     }

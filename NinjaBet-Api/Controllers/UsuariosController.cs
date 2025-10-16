@@ -18,26 +18,8 @@ namespace NinjaBet_Api.Controllers
             _usuarioService = usuarioService;
         }
 
-        //[HttpPost("criar-apostador")]
-        //[Authorize(Roles = "Cambista")]
-        //public async Task<IActionResult> CriarApostador([FromBody] LoginModel request)
-        //{
-        //    var cambistaId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        //    var usuario = await _usuarioService.CriarApostadorAsync(cambistaId, request.Username, request.Password);
-
-        //    return Ok(new
-        //    {
-        //        usuario.Id,
-        //        usuario.Username,
-        //        usuario.Perfil,
-        //        usuario.Ativo,
-        //        usuario.DataCriacao,
-        //        VinculadoAoCambista = cambistaId
-        //    });
-        //}
-
-        [HttpPost("criarUsuario")]
+        [HttpPost("CriarUsuario")]
         [Authorize]
         public async Task<IActionResult> CriarUsuario([FromBody] CreateUsuarioModel request)
         {
@@ -59,7 +41,7 @@ namespace NinjaBet_Api.Controllers
             });
         }
 
-        [HttpGet("usuarios")]
+        [HttpGet("ListarUsuarios")]
         [Authorize]
         public async Task<IActionResult> ListarUsuarios()
         {
@@ -84,6 +66,66 @@ namespace NinjaBet_Api.Controllers
             });
 
             return Ok(resultado);
+        }
+
+        [HttpPost("EditarUsuario")]
+        [Authorize]
+        public async Task<IActionResult> EditarUsuario([FromBody] EditUsuarioModel request)
+        {
+            var idLogado = int.Parse(User.FindFirstValue("id")!);
+            var usuarioLogado = await _usuarioService.GetByIdAsync(idLogado);
+            if (usuarioLogado == null || !usuarioLogado.Ativo)
+                return Unauthorized();
+
+            var userEditado = await _usuarioService.EditarUsuarioVinculadoAsync(idLogado, request.Id, request.Username, request.Password, request.Perfil);
+
+            return Ok(userEditado);
+        }
+
+        [HttpGet("Perfis")]
+        [Authorize]
+        public async Task<IActionResult> ListarPerfis()
+        {
+            var perfilUsuarioLogado = Enum.Parse<PerfilAcessoEnum>(User.FindFirstValue(ClaimTypes.Role)!);
+
+            IEnumerable<PerfilAcessoEnum> perfisDisponiveis = perfilUsuarioLogado switch
+            {
+                PerfilAcessoEnum.Admin => Enum.GetValues<PerfilAcessoEnum>(),
+                PerfilAcessoEnum.Gerente => new[] { PerfilAcessoEnum.Cambista, PerfilAcessoEnum.Apostador },
+                PerfilAcessoEnum.Cambista => new[] { PerfilAcessoEnum.Apostador },
+                _ => Array.Empty<PerfilAcessoEnum>()
+            };
+
+            var result = perfisDisponiveis.Select(p => new
+            {
+                Id = (int)p,
+                Nome = p.ToString()
+            });
+
+            return Ok(result);
+        }
+
+        [HttpDelete("ExcluirUsuario/{usuarioId}")]
+        [Authorize]
+        public async Task<IActionResult> ExcluirUsuario(int usuarioId)
+        {
+            var usuarioLogadoId = int.Parse(User.FindFirstValue("id")!);
+            var perfilLogado = Enum.Parse<PerfilAcessoEnum>(User.FindFirstValue("perfil")!);
+
+            if (usuarioId == usuarioLogadoId)
+                return BadRequest("Você não pode excluir a si mesmo.");
+
+            var usuarioParaExcluir = await _usuarioService.GetByIdAsync(usuarioId);
+            if (usuarioParaExcluir == null)
+                return NotFound("Usuário não encontrado.");
+
+            if (!UsuarioService.PodeCriarPerfil(perfilLogado, usuarioParaExcluir.Perfil))            
+                return Forbid("Você não tem permissão para excluir este usuário.");
+
+            var result = await _usuarioService.ExcluirUsuarioAsync(usuarioId);
+
+            return Ok(new { Mensagem = "Usuário excluído com sucesso.", result });
+
         }
     }
 }

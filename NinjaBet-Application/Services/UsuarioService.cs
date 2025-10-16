@@ -14,7 +14,11 @@ namespace NinjaBet_Application.Services
 
         public async Task<Usuario?> GetByIdAsync(int id)
         {
-            return await _usuarioRepository.GetByIdAsync(id);
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
+            if (usuario == null)
+                throw new Exception("Usuário não encontrado.");
+
+            return usuario;
         }
 
         public async Task<Usuario?> GetByUsernameAsync(string username)
@@ -73,12 +77,44 @@ namespace NinjaBet_Application.Services
         {
             if (solicitante.Perfil == PerfilAcessoEnum.Admin)
             {
-                return await _usuarioRepository.GetAllAsync();
+                return await _usuarioRepository.GetAllAtivosAsync();
             }
             else
             {
                 return await _usuarioRepository.GetUsuariosPorCriadorAsync(solicitante.Id);
             }
+        }
+
+        public async Task<Usuario> EditarUsuarioVinculadoAsync(int idLogado, int idUsuario, string username, string password, string perfilDesejado)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
+            if (usuario is null)
+                throw new Exception("Usuário não encontrado");
+
+            if (usuario.CriadorId != idLogado)
+                throw new Exception("Usuário não está na sua lista de Usuários");
+
+            if (!Enum.TryParse<PerfilAcessoEnum>(perfilDesejado, true, out var perfil))
+                throw new Exception("Perfil inválido.");
+
+            usuario.Username = username;
+            usuario.Perfil = perfil;
+            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            return usuario;
+        }
+
+        public async Task<Usuario> ExcluirUsuarioAsync(int usuarioId)
+        {
+            var usuario = await GetByIdAsync(usuarioId);
+
+            usuario.Ativo = false;
+
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            return usuario;
         }
     }
 }
