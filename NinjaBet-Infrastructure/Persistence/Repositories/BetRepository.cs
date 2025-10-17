@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NinjaBet_Dmain.Entities;
+using NinjaBet_Dmain.Enums;
 using NinjaBet_Dmain.Repositories;
 
 namespace NinjaBet_Infrastructure.Persistence.Repositories
@@ -41,6 +42,23 @@ namespace NinjaBet_Infrastructure.Persistence.Repositories
                 .Include(b => b.Cambista)
                 .Include(b => b.Selections)
                 .Where(b => b.CambistaId == cambistaId)
+                .ToListAsync();
+        }
+
+        public IQueryable<Bet> GetAll()
+        {
+            return _context.Bets
+                .Include(b => b.Apostador)
+                .Include(b => b.Cambista)
+                .Include(b => b.Selections)
+                .AsQueryable();
+        }
+
+        public async Task<List<int>> GetCambistasByGerenteIdAsync(int gerenteId)
+        {
+            return await _context.Usuarios
+                .Where(u => u.CriadorId == gerenteId && u.Perfil == PerfilAcessoEnum.Cambista)
+                .Select(u => u.Id)
                 .ToListAsync();
         }
     }

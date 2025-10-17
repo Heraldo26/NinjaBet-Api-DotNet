@@ -1,11 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NinjaBet_Application.DTOs;
+using NinjaBet_Application.DTOs.Caixa;
 using NinjaBet_Application.Interfaces;
 using NinjaBet_Dmain.Entities;
 using NinjaBet_Dmain.Entities.Log;
 using NinjaBet_Dmain.Enums;
-using NinjaBet_Dmain.Repositories;
 using NinjaBet_Dmain.Extensions;
+using NinjaBet_Dmain.Repositories;
 
 namespace NinjaBet_Application.Services
 {
@@ -200,6 +202,68 @@ namespace NinjaBet_Application.Services
             }
 
             return dto;
+        }
+
+        public async Task<IEnumerable<object>> ConsultarCaixaAsync(int usuarioId, PerfilAcessoEnum perfil, CaixaFiltroDto filtros)
+        {
+            IQueryable<Bet> query = _betRepository.GetAll();
+
+            if (perfil == PerfilAcessoEnum.Cambista)
+            {
+                query = query.Where(b => b.CambistaId == usuarioId);
+            }
+            else if (perfil == PerfilAcessoEnum.Gerente)
+            {
+                var cambistasIds = await _betRepository.GetCambistasByGerenteIdAsync(usuarioId);
+                query = query.Where(b => cambistasIds.Contains(b.CambistaId.Value));
+            }
+
+            if(filtros.ClienteId.HasValue)
+            {
+                query = query.Where(b => b.ApostadorId == filtros.ClienteId.Value);
+            }
+
+            if(filtros.DataDe.HasValue)
+            {
+                query = query.Where(b => b.DataCriada >= filtros.DataDe.Value);
+            }
+
+            if(filtros.DataAte.HasValue)
+            {
+                query = query.Where(b => b.DataCriada <= filtros.DataAte.Value);
+            }
+
+            if(filtros.Situacao.HasValue)
+            {
+                query = query.Where(b => b.Status == filtros.Situacao.Value);
+            }
+
+            if(!string.IsNullOrEmpty(filtros.TipoAposta))
+            {
+                query = filtros.TipoAposta.ToLower() switch
+                {
+                    "simples" => query.Where(b => b.Selections.Count == 1),
+                    "dupla" => query.Where(b => b.Selections.Count == 2),
+                    "multipla" => query.Where(b => b.Selections.Count > 2),
+                    _ => query
+                };
+            }
+
+            var lista = await query
+                              .Select(b => new
+                              {
+                                  Numero = b.Id,
+                                  Cliente = b.Apostador.Username,
+                                  Valor = b.Valor,
+                                  Premio = b.PossivelRetorno,
+                                  Comissao = Math.Round(b.PossivelRetorno * 0.05m, 2), // Exemplo de comissão de 5%
+                                  Situacao = b.Status.ToString(),
+                                  Data = b.DataCriada,
+                                  Cambista = b.Cambista.Username
+                              })
+                              .ToListAsync();
+
+            return lista;
         }
 
         private bool VerificarResultado(string palpite, int? placarCasa, int? placarFora)

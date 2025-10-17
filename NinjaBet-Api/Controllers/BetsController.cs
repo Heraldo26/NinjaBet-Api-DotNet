@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NinjaBet_Api.Models.Caixa;
 using NinjaBet_Application.DTOs;
+using NinjaBet_Application.DTOs.Caixa;
 using NinjaBet_Application.Services;
-using NinjaBet_Dmain.Entities;
 using NinjaBet_Dmain.Enums;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace NinjaBet_Api.Controllers
 {
@@ -15,13 +16,16 @@ namespace NinjaBet_Api.Controllers
     {
         private readonly BetService _betService;
         private readonly UsuarioService _usuarioService;
+        private readonly IMapper _mapper;
 
-        public BetsController(BetService betService, UsuarioService usuarioService)
+        public BetsController(BetService betService, UsuarioService usuarioService, IMapper mapper)
         {
             _betService = betService;
             _usuarioService = usuarioService;
+            _mapper = mapper;
         }
 
+        
         [HttpPost]
         public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {
@@ -66,7 +70,7 @@ namespace NinjaBet_Api.Controllers
 
 
         [Authorize(Roles = "Admin,Cambista")]
-        [HttpGet("listarBets")]
+        [HttpGet("ListarBets")]
         public async Task<IActionResult> listarBets()
         {
             var userId = int.Parse(User.FindFirstValue("id")!);
@@ -76,7 +80,7 @@ namespace NinjaBet_Api.Controllers
             return Ok(new { success = true, data = apostas });
         }
 
-        [HttpPost("aprovar/{betId}")]
+        [HttpPost("Aprovar/{betId}")]
         [Authorize(Roles = "Cambista")]
         public async Task<IActionResult> AprovarAposta(int betId)
         {
@@ -108,7 +112,7 @@ namespace NinjaBet_Api.Controllers
             }
         }
 
-        [HttpPost("cancelar/{betId}")]
+        [HttpPost("Cancelar/{betId}")]
         [Authorize(Roles = "Cambista")]
         public async Task<IActionResult> CancelarAposta(int betId)
         {
@@ -132,6 +136,27 @@ namespace NinjaBet_Api.Controllers
                         aposta.DataCancelado
                     }
                 });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Erro = ex.Message });
+            }
+        }
+
+        [HttpGet("ConsultarCaixa")]
+        [Authorize(Roles = "Admin,Gerente, Cambista")]
+        public async Task<IActionResult> ConsultarCaixa([FromQuery] CaixaFiltroModel filtros)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue("id")!);
+                var perfil = Enum.Parse<PerfilAcessoEnum>(User.FindFirst(ClaimTypes.Role)!.Value);
+
+                var filtroDto = _mapper.Map<CaixaFiltroDto>(filtros);
+
+                var resultado = await _betService.ConsultarCaixaAsync(userId, perfil, filtroDto);
+
+                return Ok(resultado);
             }
             catch (Exception ex)
             {

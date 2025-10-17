@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NinjaBet_Api.AutoMapper;
 using NinjaBet_Api.Services;
 using NinjaBet_Application.Interfaces;
 using NinjaBet_Application.Services;
@@ -86,7 +87,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 // DbContext
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
