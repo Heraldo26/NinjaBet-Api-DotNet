@@ -75,14 +75,16 @@ namespace NinjaBet_Application.Services
 
         public async Task<List<Usuario>> GetUsuariosVinculadosAsync(Usuario solicitante)
         {
-            if (solicitante.Perfil == PerfilAcessoEnum.Admin)
-            {
-                return await _usuarioRepository.GetAllAtivosAsync();
-            }
-            else
-            {
-                return await _usuarioRepository.GetUsuariosPorCriadorAsync(solicitante.Id);
-            }
+            return solicitante.Perfil == PerfilAcessoEnum.Admin
+                ? await _usuarioRepository.GetAllAtivosAsync(null)
+                : await _usuarioRepository.GetAllAtivosAsync(solicitante.Id);            
+        }
+
+        public async Task<List<Usuario>> GetCambistasVinculadosAsync(Usuario solicitante)
+        {
+           return solicitante.Perfil == PerfilAcessoEnum.Admin 
+                ? await _usuarioRepository.GetCambistasAtivosAsync(null) 
+                : await _usuarioRepository.GetCambistasAtivosAsync(solicitante.Id);            
         }
 
         public async Task<Usuario> EditarUsuarioVinculadoAsync(int idLogado, int idUsuario, string username, string password, string perfilDesejado)

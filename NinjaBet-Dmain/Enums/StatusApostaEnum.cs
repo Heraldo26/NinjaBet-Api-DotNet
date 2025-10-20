@@ -5,6 +5,8 @@
         Pendente = 1,
         Aprovada = 2,
         Cancelada = 3,
-        Concluida = 4
+        Concluida = 4,
+        Ganhou = 5,
+        Perdeu = 6
     }
 }

@@ -238,6 +238,11 @@ namespace NinjaBet_Application.Services
                 query = query.Where(b => b.Status == filtros.Situacao.Value);
             }
 
+            if (filtros.CambistaId.HasValue)
+            {
+                query = query.Where(b => b.CambistaId == filtros.CambistaId);
+            }
+
             if(!string.IsNullOrEmpty(filtros.TipoAposta))
             {
                 query = filtros.TipoAposta.ToLower() switch
@@ -259,7 +264,12 @@ namespace NinjaBet_Application.Services
                                   Comissao = Math.Round(b.PossivelRetorno * 0.05m, 2), // Exemplo de comissão de 5%
                                   Situacao = b.Status.ToString(),
                                   Data = b.DataCriada,
-                                  Cambista = b.Cambista.Username
+                                  Cambista = b.Cambista.Username,
+                                  TipoAposta = b.Selections.Count == 1
+                                                ? "Simples"
+                                                : b.Selections.Count == 2
+                                                    ? "Dupla"
+                                                    : "Múltipla"
                               })
                               .ToListAsync();
 

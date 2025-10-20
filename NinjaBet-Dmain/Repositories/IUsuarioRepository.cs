@@ -9,8 +9,8 @@ namespace NinjaBet_Dmain.Repositories
         Task<Usuario?> GetByUsername(string username);
         Task<Usuario?> GetByIdAsync(int id);
 
-        Task<List<Usuario>> GetAllAtivosAsync();
-        Task<List<Usuario>> GetUsuariosPorCriadorAsync(int criadorId);
+        Task<List<Usuario>> GetAllAtivosAsync(int? criadorId);
+        Task<List<Usuario>> GetCambistasAtivosAsync(int? vinculoId);
         Task AddAsync(Usuario usuario);
 
         Task UpdateAsync(Usuario usuario);
