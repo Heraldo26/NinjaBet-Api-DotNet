@@ -10,6 +10,8 @@ namespace NinjaBet_Dmain.Entities
         public string Username { get; set; }
         public string PasswordHash { get; set; }
         public PerfilAcessoEnum Perfil { get; set; }
+        public decimal? Saldo { get; set; }
+        public decimal? Percentual { get; set; }
         public bool Ativo { get; set; }
         public DateTime DataCriacao { get; set; }
 
@@ -28,6 +30,11 @@ namespace NinjaBet_Dmain.Entities
             Perfil = perfil;
             Ativo = true;
             DataCriacao = DateTime.UtcNow;
+            if (perfil == PerfilAcessoEnum.Cambista)
+            {
+                Saldo = 0m;
+                Percentual = 15;
+            }
         }
 
         // Métodos de domínio

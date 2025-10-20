@@ -39,7 +39,9 @@ namespace NinjaBet_Api.Controllers
             return Ok(new
             {
                 Token = token,
+                UserName = usuario.Username,
                 Perfil = usuario.Perfil.ToString(),
+                Saldo = usuario.Saldo,
                 Ativo = usuario.Ativo,
                 CriadoEm = usuario.DataCriacao
             });
