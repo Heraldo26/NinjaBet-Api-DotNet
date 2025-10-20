@@ -62,6 +62,22 @@ namespace NinjaBet_Application.Services
             return usuario;
         }
 
+        public async Task<Usuario> EditarPerfilAsync(int idUsuario, string username, string password)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
+            if (usuario is null)
+                throw new Exception("Usuário não encontrado");
+           
+            usuario.Username = username;
+
+            if(!String.IsNullOrEmpty(password))
+            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            return usuario;
+        }
+
         public static bool PodeCriarPerfil(PerfilAcessoEnum criador, PerfilAcessoEnum desejado)
         {
             return criador switch

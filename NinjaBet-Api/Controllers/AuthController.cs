@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NinjaBet_Api.Models.Auth;
@@ -42,6 +43,43 @@ namespace NinjaBet_Api.Controllers
                 Ativo = usuario.Ativo,
                 CriadoEm = usuario.DataCriacao
             });
+        }
+
+        [HttpGet("GetPerfil")]
+        [Authorize]
+        public async Task<IActionResult> GetPerfil()
+        {
+            var idLogado = int.Parse(User.FindFirstValue("id")!);
+            var usuarioLogado = await _usuarioService.GetByIdAsync(idLogado);
+
+            if (usuarioLogado == null || !usuarioLogado.Ativo)
+                return Unauthorized();
+
+            var usuario = await _usuarioService.GetByIdAsync(idLogado);
+
+            return Ok(new
+            {
+                usuario.Id,
+                usuario.Username,
+                Perfil = usuario.Perfil.ToString(),
+                usuario.Ativo,
+                usuario.DataCriacao,
+                CriadorId = usuario.CriadorId
+            });
+        }
+
+        [HttpPost("EditarPerfil")]
+        [Authorize]
+        public async Task<IActionResult> EditarPerfil([FromBody] EditUsuarioModel request)
+        {
+            var idLogado = int.Parse(User.FindFirstValue("id")!);
+            var usuarioLogado = await _usuarioService.GetByIdAsync(idLogado);
+            if (usuarioLogado == null || !usuarioLogado.Ativo)
+                return Unauthorized();
+
+            var userEditado = await _usuarioService.EditarPerfilAsync(request.Id, request.Username, request.Password);
+
+            return Ok(userEditado);
         }
 
         //[HttpPost("register")]

@@ -92,6 +92,29 @@ namespace NinjaBet_Api.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("GetUsuario")]
+        [Authorize]
+        public async Task<IActionResult> GetUsuario()
+        {
+            var idLogado = int.Parse(User.FindFirstValue("id")!);
+            var usuarioLogado = await _usuarioService.GetByIdAsync(idLogado);
+
+            if (usuarioLogado == null || !usuarioLogado.Ativo)
+                return Unauthorized();
+
+            var usuario = await _usuarioService.GetByIdAsync(idLogado);
+
+            return Ok(new
+            {
+                usuario.Id,
+                usuario.Username,
+                Perfil = usuario.Perfil.ToString(),
+                usuario.Ativo,
+                usuario.DataCriacao,
+                CriadorId = usuario.CriadorId
+            });
+        }
+
         [HttpPost("EditarUsuario")]
         [Authorize]
         public async Task<IActionResult> EditarUsuario([FromBody] EditUsuarioModel request)
