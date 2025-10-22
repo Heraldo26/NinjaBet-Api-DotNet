@@ -32,7 +32,7 @@ namespace NinjaBet_Api.Controllers
                 return Forbid("Você não tem permissão para criar um usuário com esse perfil.");
             }
 
-            var usuario = await _usuarioService.CreateUsuario(request.Username, request.Password, request.Perfil, usuarioCriadorId);
+            var usuario = await _usuarioService.CreateUsuario(request.Username, request.Password, request.Perfil, request.Saldo, usuarioCriadorId);
 
             return Ok(new
             {
@@ -60,6 +60,7 @@ namespace NinjaBet_Api.Controllers
                 u.Id,
                 u.Username,
                 Perfil = u.Perfil.ToString(),
+                u.Saldo,
                 u.Ativo,
                 u.DataCriacao,
                 CriadorId = u.CriadorId
@@ -85,6 +86,7 @@ namespace NinjaBet_Api.Controllers
                 u.Id,
                 u.Username,
                 Perfil = u.Perfil.ToString(),
+                Saldo = u.Saldo,
                 u.Ativo,
                 u.DataCriacao,
                 CriadorId = u.CriadorId
@@ -124,7 +126,7 @@ namespace NinjaBet_Api.Controllers
             if (usuarioLogado == null || !usuarioLogado.Ativo)
                 return Unauthorized();
 
-            var userEditado = await _usuarioService.EditarUsuarioVinculadoAsync(idLogado, request.Id, request.Username, request.Password, request.Perfil);
+            var userEditado = await _usuarioService.EditarUsuarioVinculadoAsync(idLogado, request.Id, request.Username, request.Saldo, request.Password, request.Perfil);
 
             return Ok(userEditado);
         }

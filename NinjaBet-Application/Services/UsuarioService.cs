@@ -36,7 +36,7 @@ namespace NinjaBet_Application.Services
             return usuario;
         }
 
-        public async Task<Usuario> CreateUsuario(string username, string password, string perfilDesejado, int criadorId)
+        public async Task<Usuario> CreateUsuario(string username, string password, string perfilDesejado, decimal? saldo, int criadorId)
         {
             Usuario existente = await _usuarioRepository.GetByUsername(username);
             if (existente != null)
@@ -54,6 +54,7 @@ namespace NinjaBet_Application.Services
                 Perfil = perfil,
                 Ativo = true,
                 DataCriacao = DateTime.UtcNow,
+                Saldo = saldo,
                 CriadorId = criadorId // vínculo com quem criou
             };
 
@@ -67,11 +68,11 @@ namespace NinjaBet_Application.Services
             var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
             if (usuario is null)
                 throw new Exception("Usuário não encontrado");
-           
+
             usuario.Username = username;
 
-            if(!String.IsNullOrEmpty(password))
-            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            if (!String.IsNullOrEmpty(password))
+                usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
             await _usuarioRepository.UpdateAsync(usuario);
 
@@ -93,17 +94,17 @@ namespace NinjaBet_Application.Services
         {
             return solicitante.Perfil == PerfilAcessoEnum.Admin
                 ? await _usuarioRepository.GetAllAtivosAsync(null)
-                : await _usuarioRepository.GetAllAtivosAsync(solicitante.Id);            
+                : await _usuarioRepository.GetAllAtivosAsync(solicitante.Id);
         }
 
         public async Task<List<Usuario>> GetCambistasVinculadosAsync(Usuario solicitante)
         {
-           return solicitante.Perfil == PerfilAcessoEnum.Admin 
-                ? await _usuarioRepository.GetCambistasAtivosAsync(null) 
-                : await _usuarioRepository.GetCambistasAtivosAsync(solicitante.Id);            
+            return solicitante.Perfil == PerfilAcessoEnum.Admin
+                 ? await _usuarioRepository.GetCambistasAtivosAsync(null)
+                 : await _usuarioRepository.GetCambistasAtivosAsync(solicitante.Id);
         }
 
-        public async Task<Usuario> EditarUsuarioVinculadoAsync(int idLogado, int idUsuario, string username, string password, string perfilDesejado)
+        public async Task<Usuario> EditarUsuarioVinculadoAsync(int idLogado, int idUsuario, string username, decimal? saldo, string password, string perfilDesejado)
         {
             var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
             if (usuario is null)
@@ -117,7 +118,9 @@ namespace NinjaBet_Application.Services
 
             usuario.Username = username;
             usuario.Perfil = perfil;
-            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            usuario.Saldo = saldo;
+            if (!String.IsNullOrEmpty(password))
+                usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
             await _usuarioRepository.UpdateAsync(usuario);
 
