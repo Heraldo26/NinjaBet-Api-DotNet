@@ -37,6 +37,55 @@ namespace NinjaBet_Api.Services
 
         public List<League> GetMainLeagues() => _mainLeagues;
 
+        public async Task<List<League>> GetMainLeaguesDynamicAsync()
+        {
+            var baseUrl = _config["Football:RAPIDAPI_FOOTBALL_URL"];
+            var url = $"{baseUrl}/leagues";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            var responseArray = doc.RootElement.GetProperty("response");
+
+            var ligasDesejadas = new[]
+            {
+                "La Liga",
+                "Serie A",
+                "CONMEBOL Libertadores",
+                "Champions League",
+                "Copa Do Brasil",
+                "Brasileirão Serie A",
+                "Brasileirão Serie B"
+            };
+
+            var leagues = new List<League>();
+
+            foreach (var liga in responseArray.EnumerateArray())
+            {
+                var leagueName = liga.GetProperty("league").GetProperty("name").GetString();
+                if (ligasDesejadas.Contains(leagueName))
+                {
+                    var currentSeason = liga.GetProperty("seasons")
+                        .EnumerateArray()
+                        .FirstOrDefault(s => s.GetProperty("current").GetBoolean());
+
+                    if (currentSeason.ValueKind != JsonValueKind.Undefined)
+                    {
+                        leagues.Add(new League(
+                            liga.GetProperty("league").GetProperty("id").GetInt32(),
+                            leagueName
+                        ));
+                    }
+                }
+            }
+
+            return leagues;
+
+        }
+
         public async Task<List<Match>> GetJogosPorDataAsync(DateTime? data = null)
         {
             var baseUrl = _config["Football:RAPIDAPI_FOOTBALL_URL"];
@@ -68,7 +117,9 @@ namespace NinjaBet_Api.Services
             var season = _config["Football:RAPIDAPI_FOOTBALL_SEASON"];
             var partidas = new List<Match>();
 
-            foreach (var league in _mainLeagues)
+            var leagues = await GetMainLeaguesDynamicAsync();
+
+            foreach (var league in leagues)
             {
                 var url = $"{baseUrl}/fixtures?league={league.Id}&season={season}&next=10";
                 var leagueMatches = await ProcessarPartidasAsync(url);
