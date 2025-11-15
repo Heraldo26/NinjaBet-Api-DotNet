@@ -43,6 +43,8 @@ namespace NinjaBet_Application.Services
                         selectionDto.IdJogo,
                         selectionDto.Competicao,
                         selectionDto.TipoEsporte,
+                        selectionDto.Time1,
+                        selectionDto.Time2,
                         selectionDto.Palpite,
                         selectionDto.OddSelecionada
                     );
@@ -91,7 +93,7 @@ namespace NinjaBet_Application.Services
             if (bet.Status != StatusApostaEnum.Pendente)
                 throw new ApplicationException("Apenas apostas pendentes podem ser aprovadas.");
 
-            foreach(var selection in bet.Selections)
+            foreach (var selection in bet.Selections)
             {
                 var jogo = await _jogosService.ObterJogoPorId(selection.IdJogo);
 
@@ -128,6 +130,39 @@ namespace NinjaBet_Application.Services
 
             await _betRepository.UpdateAsync(bet);
 
+            return bet;
+        }
+
+        public async Task<Bet> RemoverJogo(int idBilhete, int idJogo, int cambistaId)
+        {
+            var bet = await _betRepository.ObterPorIdAsync(idBilhete);
+
+            if (bet == null)
+                throw new Exception("Aposta não encontrada.");
+
+            if (bet.CambistaId != cambistaId)
+                throw new Exception("Você não pode modificar apostas de outro cambista.");
+
+            var selecao = bet.Selections.FirstOrDefault(s => s.IdJogo == idJogo);
+
+            if (selecao == null)
+                throw new Exception("Jogo não encontrado na aposta.");
+
+            bet.Selections.Remove(selecao);
+
+            //cancelar o bilhete se ficar sem selecao
+            if (bet.Selections.Count == 0)
+            {
+                bet.Status = StatusApostaEnum.Cancelada;
+                bet.DataCancelado = DateTime.UtcNow;
+                await _betRepository.UpdateAsync(bet);
+                return bet;
+            }
+
+            // Recalcular odds e possível retorno
+            bet.TotalOdds = bet.Selections.Aggregate(1m, (acc, sel) => acc * sel.OddSelecionado);
+            bet.PossivelRetorno = Math.Round(bet.Valor * bet.TotalOdds, 2);
+            await _betRepository.UpdateAsync(bet);
             return bet;
         }
 
@@ -218,22 +253,22 @@ namespace NinjaBet_Application.Services
                 query = query.Where(b => cambistasIds.Contains(b.CambistaId.Value));
             }
 
-            if(filtros.ClienteId.HasValue)
+            if (filtros.ClienteId.HasValue)
             {
                 query = query.Where(b => b.ApostadorId == filtros.ClienteId.Value);
             }
 
-            if(filtros.DataDe.HasValue)
+            if (filtros.DataDe.HasValue)
             {
                 query = query.Where(b => b.DataCriada >= filtros.DataDe.Value);
             }
 
-            if(filtros.DataAte.HasValue)
+            if (filtros.DataAte.HasValue)
             {
                 query = query.Where(b => b.DataCriada <= filtros.DataAte.Value);
             }
 
-            if(filtros.Situacao.HasValue)
+            if (filtros.Situacao.HasValue)
             {
                 query = query.Where(b => b.Status == filtros.Situacao.Value);
             }
@@ -243,7 +278,7 @@ namespace NinjaBet_Application.Services
                 query = query.Where(b => b.CambistaId == filtros.CambistaId);
             }
 
-            if(!string.IsNullOrEmpty(filtros.TipoAposta))
+            if (!string.IsNullOrEmpty(filtros.TipoAposta))
             {
                 query = filtros.TipoAposta.ToLower() switch
                 {

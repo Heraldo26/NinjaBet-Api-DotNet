@@ -25,7 +25,7 @@ namespace NinjaBet_Api.Controllers
             _mapper = mapper;
         }
 
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateBet([FromBody] BetTicketDto dto)
         {
@@ -141,6 +141,25 @@ namespace NinjaBet_Api.Controllers
             {
                 return BadRequest(new { Erro = ex.Message });
             }
+        }
+
+        [HttpDelete("{idBilhete}/jogo/{idJogo}")]
+        [Authorize(Roles = "Cambista")]
+        public async Task<IActionResult> RemoverJogoDoBilhete(int idBilhete, int idJogo)
+        {
+            var usuarioId = int.Parse(User.FindFirst("id")!.Value);
+            var perfil = Enum.Parse<PerfilAcessoEnum>(User.FindFirst(ClaimTypes.Role)!.Value);
+
+            if (perfil != PerfilAcessoEnum.Cambista)
+                return Forbid("Apenas Cambistas podem remover jogos.");
+
+            var result = await _betService.RemoverJogo(idBilhete, idJogo, usuarioId);
+
+            return Ok(new
+            {
+                Mensagem = "Jogo removido com sucesso!",
+                Bilhete = result
+            });
         }
 
         [HttpGet("ConsultarCaixa")]
